@@ -9,18 +9,17 @@ import (
 
 func createBaseState(se *StorageEntry) *lua.State {
 	l := lua.NewState()
-	lua.BaseOpen(l)
+	lua.Require(l, "math", lua.MathOpen, true)
+	lua.Require(l, "string", lua.StringOpen, true)
+	lua.Require(l, "table", lua.TableOpen, true)
 
 	_ = lua.NewMetaTable(l, "neosMetaTable")
 	lua.SetFunctions(l, []lua.RegistryFunction{
 		{
-			Name: "update",
+			Name: "send",
 			Function: func(l *lua.State) int {
 				varName := lua.CheckString(l, 1)
-				varVal, exists := se.persistence[varName]
-				if !exists {
-					return 1
-				}
+				varVal := l.ToValue(2)
 
 				select {
 				case se.writeChan <- MessageTpl{
@@ -28,13 +27,13 @@ func createBaseState(se *StorageEntry) *lua.State {
 					VarVal:  varVal,
 				}:
 					logrus.WithFields(logrus.Fields{
-						"namespace": se.Namespace,
+						"namespace": se.session,
 						"var_name":  varName,
 						"var_value": varVal,
 					}).Info("send var to ws")
 				case <-time.After(time.Second):
 					logrus.WithFields(logrus.Fields{
-						"namespace": se.Namespace,
+						"namespace": se.session,
 					}).Info("send timeout")
 				}
 
@@ -49,7 +48,7 @@ func createBaseState(se *StorageEntry) *lua.State {
 
 				se.persistence[varName] = varVal
 				logrus.WithFields(logrus.Fields{
-					"namespace": se.Namespace,
+					"namespace": se.session,
 					"var_name":  varName,
 					"var_value": varVal,
 				}).Info("updated persistent var")
@@ -62,11 +61,27 @@ func createBaseState(se *StorageEntry) *lua.State {
 				varName := lua.CheckString(l, 1)
 
 				logrus.WithFields(logrus.Fields{
-					"namespace": se.Namespace,
+					"namespace": se.session,
 					"var_name":  varName,
 				}).Info("read persistent var")
 
 				l.PushLightUserData(se.persistence[varName])
+				return 1
+			},
+		},
+		{
+			Name: "tonumber",
+			Function: func(l *lua.State) int {
+				source, _ := l.ToNumber(1)
+				l.PushLightUserData(source)
+				return 1
+			},
+		},
+		{
+			Name: "tostring",
+			Function: func(state *lua.State) int {
+				lua.CheckAny(l, 1)
+				lua.ToStringMeta(l, 1)
 				return 1
 			},
 		},

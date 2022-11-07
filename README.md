@@ -8,39 +8,40 @@ at some point in time.
 
 This app will start a HTTP server on port 8081 and provide a few endpoints:
 
-* POST `/lambda/{namespace}`   Initialize a common namespace. A namespace is a container for a bunch of persistent variables. As a body provide a valid JSON array of strings. Each string will be setup as an empty persistent variable... Why? Why not I guess.
-* POST `/lambda/{namespace}/{function name}`   Adds a function with the given name to an internal list of lambda functions. As body provide lua code that will be executed in its own state when called
-* GET/WS `/connect/{namespace}`   Endpoint to connect to via websocket
+* POST `/lambda`   Initialize a session. A session is a container for a bunch of persistent variables. As a body you can provide some initial persistent variables like `a=1|b=hello`. It returns the session token to use for all lambda calls and 
+* POST `/lambda/{session token}/{function name}`   Adds a function with the given name to an internal list of lambda functions. As body provide lua code that will be executed in its own state when called
+* GET/WS `/connect/{session token}`   Endpoint to connect to via websocket
 
 The websocket connection allows you to send the name of lambda function prior setup via the HTTP call metioned above.
 
 ## lua API
 
-The lua state is injected with a table called `neos`. There are 3 functions on that table.
+The lua state is injected with a table called `neos`. There are 5 functions on that table.
 * neos.persist(varName, varValue) Saves var on an internal map.
 * neos.load(varName) Reads var from internal stack and returns whatever was stored
-* neos.update(varName) Send the current value of var to the websocket connection
+* neos.send(varName, varValue) Send the varValue as VarName to the ws client
+* neos.tonumber(val) Converts the given string to a number
+* neos.tostring(val) Converts given value to a string
 
 ## Example
 
 ```
-POST /lambda/test
-["a", "b"]
+POST /lambda
+a=1|b=3
+< abc123
 
-POST /lambda/test/init
-neos.persist("a", "1")
-neos.persist("b", "2")
-
-POST /lambda/test/fn1
-local a = tonumber(neos.load("a"))
-local a = a + 1
+POST /lambda/abc123/fn1
+a = neos.tonumber(neos.load("a"))
+a = a + 1
+max = math.max(a, b)
 neos.persist("a", a)
-neos.update("a")
+neos.send("max", max)
 
-WS /connect/test
-> init
+WS /connect/abc123
 > fn1
-< a|2
+< max|3
 > fn1
-< a|3
+< max|3
+> fn1
+< max|4
 ```

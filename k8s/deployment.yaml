@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lambda
+  labels:
+    app: lambda
+spec:
+  selector:
+    matchLabels:
+      app: lambda
+  template:
+    metadata:
+      labels:
+        app: lambda
+    spec:
+      containers:
+        - 
+          name: lambda
+          image: ghcr.io/devnull-twitch/lambda-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          env:
+            -
+              name: HTML_TEMPLATE_DIR
+              value: "templates"
+            -
+              name: ASSET_DIR
+              value: "assets"
+      imagePullSecrets:
+        - name: dockerconfigjson-ghcr

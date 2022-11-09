@@ -18,15 +18,20 @@ func main() {
 
 	api := r.Group("/api")
 	{
-		api.POST("/lambda", server.PostNamespace)
-		api.POST("/lambda/:namespace/:func", server.PostLambda)
+		// memory writing endpoints
+		api.POST("/session", server.PostSession)
+		api.POST("/session/:namespace/lambda/:func", server.PostLambda)
+
+		// file writing endpoints
+		api.POST("/session/:namespace/save", server.CheckAuth, server.PostSaveSession)
+		api.POST("/template", server.CheckAuth, server.PostTemplate)
 	}
 
 	r.GET("/connect/:namespace", server.WsHandler)
 
 	// HTML pages
 	r.GET("/", server.GetHTMLHandler("sessions", gin.H{}))
-	r.GET("/lambdas/:namespace", func(c *gin.Context) {
+	r.GET("/session/:namespace", func(c *gin.Context) {
 		server.GetHTMLHandler("lambdas", gin.H{
 			"Namespace": c.Param("namespace"),
 		})(c)

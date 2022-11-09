@@ -110,6 +110,10 @@ func parseMessage(msg string) (string, LambdaArgs, error) {
 }
 
 func parseArguments(msg string) (LambdaArgs, error) {
+	if len(msg) <= 0 {
+		return LambdaArgs{}, nil
+	}
+
 	parts := strings.Split(msg, "|")
 	arguments := make(map[string]string)
 	for _, part := range parts {

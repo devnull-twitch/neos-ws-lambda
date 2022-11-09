@@ -26,7 +26,7 @@
         const nameInput = document.querySelector('#name-input');
         const saveBtn = document.querySelector('#save-btn');
         saveBtn.addEventListener('click', () => {
-            fetch(`/api/lambda/${saveBtn.dataset.namespace}/${nameInput.value}`, {
+            fetch(`/api/session/${saveBtn.dataset.namespace}/lambda/${nameInput.value}`, {
                 headers: {
                     'Content-Type': 'text/plain'
                 },

@@ -32,7 +32,7 @@
                 args.push(`${row.querySelector('input:first-child').value}=${row.querySelector('input:nth-child(2)').value}`);
             });
 
-            fetch('/api/lambda', {
+            fetch('/api/session', {
                 headers: {
                     'Content-Type': 'text/plain'
                 },
@@ -41,7 +41,7 @@
             }).then(async (resp) => {
                 return resp.text();
             }).then((r) => {
-                window.location.href = `/lambdas/${r}`;
+                window.location.href = `/session/${r}`;
             });
         });
 

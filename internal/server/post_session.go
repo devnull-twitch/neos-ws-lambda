@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -9,12 +10,36 @@ import (
 
 	"github.com/devnull-twitch/neos-ws-lambda/lib/lambda"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
-func PostNamespace(c *gin.Context) {
+func PostSession(c *gin.Context) {
 	bodyBytes, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	se := lambda.NewEntry()
+	token := token(10)
+
+	if c.Query("template") != "" {
+		tplName := c.Query("template")
+		validate := validator.New()
+		if err := validate.Var(tplName, "alphanum"); err != nil {
+			log.Fatal(err)
+		}
+		tpl, err := lambda.ReadTemplate(fmt.Sprintf("%s.json", tplName))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for tplVarName, tplVarVal := range tpl.Arguments {
+			se.SetupPersist(tplVarName, tplVarVal)
+		}
+
+		for tplLambdaName, tplLambdaCode := range tpl.Lambdas {
+			se.AddLambda(tplLambdaName, tplLambdaCode)
+		}
 	}
 
 	args, err := parseArguments(string(bodyBytes))
@@ -22,8 +47,6 @@ func PostNamespace(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	se := lambda.NewEntry()
-	token := token(10)
 	for varName, varVal := range args {
 		se.SetupPersist(varName, varVal)
 	}

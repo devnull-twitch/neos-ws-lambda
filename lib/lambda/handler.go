@@ -27,11 +27,11 @@ func NewEntry() *StorageEntry {
 	return &StorageEntry{
 		lastUsed:    time.Now(),
 		persistence: make(map[string]interface{}),
+		lambdas:     make(map[string]string),
 	}
 }
 
 func Add(name string, entry *StorageEntry) error {
-	entry.lambdas = make(map[string]string)
 	entry.session = name
 	store[name] = entry
 	return nil
@@ -88,6 +88,18 @@ func (se *StorageEntry) RunLambda(name string, args map[string]string) {
 	// let gc handle state?
 }
 
+func (se *StorageEntry) ToTemplate() *Template {
+	strArgMap := make(map[string]string)
+	for varName, varVal := range se.persistence {
+		strArgMap[varName] = fmt.Sprintf("%v", varVal)
+	}
+
+	return &Template{
+		Arguments: strArgMap,
+		Lambdas:   se.lambdas,
+	}
+}
+
 func CleanupWorker(doneChan <-chan bool) {
 	for {
 		select {
@@ -95,7 +107,7 @@ func CleanupWorker(doneChan <-chan bool) {
 			break
 		case <-time.After(time.Minute):
 			for key, se := range store {
-				if se.lastUsed.Before(time.Now().Add(-time.Hour)) {
+				if se.lastUsed.Before(time.Now().Add(-(time.Hour * 12))) {
 					delete(store, key)
 					logrus.WithField("namespace", key).Info("deleted session")
 				}

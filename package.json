@@ -1,0 +1,26 @@
+{
+  "name": "neos-ws-lambda",
+  "version": "1.0.0",
+  "description": "The goal is to have a flexible method to have more complex logic in NeosVR that I do not want to write and maintain in LogiX. But if possible this should be as generic as possible so it may be of an actual use  at some point in time.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devnull-twitch/neos-ws-lambda.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/devnull-twitch/neos-ws-lambda/issues"
+  },
+  "homepage": "https://github.com/devnull-twitch/neos-ws-lambda#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.2.2"
+  }
+}

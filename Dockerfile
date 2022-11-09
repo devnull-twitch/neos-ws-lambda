@@ -15,7 +15,11 @@ RUN go mod download && \
 FROM alpine:3 AS runner
 
 COPY --from=builder /app/lambda-server /lambda-server
+ENV ASSET_DIR assets
 COPY assets assets
+ENV HTML_TEMPLATE_DIR templates
 COPY templates templates
+ENV LAMBDA_TEMPLATE_DIR session_templates
+RUN mkdir session_templates
 
 ENTRYPOINT ["/lambda-server"]

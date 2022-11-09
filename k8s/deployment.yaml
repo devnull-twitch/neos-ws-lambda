@@ -22,10 +22,11 @@ spec:
             - containerPort: 8081
           env:
             -
-              name: HTML_TEMPLATE_DIR
-              value: "templates"
+              name: AUTH_USERNAME
+              value: "change_me"
             -
-              name: ASSET_DIR
-              value: "assets"
+              name: AUTH_PASSWORD
+              value: "change_me"
+            - 
       imagePullSecrets:
         - name: dockerconfigjson-ghcr

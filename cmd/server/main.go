@@ -21,10 +21,6 @@ func main() {
 		// memory writing endpoints
 		api.POST("/session", server.PostSession)
 		api.POST("/session/:namespace/lambda/:func", server.PostLambda)
-
-		// file writing endpoints
-		api.POST("/session/:namespace/save", server.CheckAuth, server.PostSaveSession)
-		api.POST("/template", server.CheckAuth, server.PostTemplate)
 	}
 
 	r.GET("/connect/:namespace", server.WsHandler)
@@ -38,6 +34,14 @@ func main() {
 	})
 
 	r.Static("/assets", os.Getenv("ASSET_DIR"))
+
+	ghAddStateChan, ghCheckChan := server.GhStateWorker()
+
+	ghAuthGroup := r.Group("/auth/github")
+	{
+		ghAuthGroup.GET("/", server.GetGHReditectHandler(ghAddStateChan))
+		ghAuthGroup.GET("/back", server.GetGHCallbackHandler(ghCheckChan))
+	}
 
 	doneChan := make(chan bool)
 	go lambda.CleanupWorker(doneChan)

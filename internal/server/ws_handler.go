@@ -24,7 +24,9 @@ type LambdaArgs map[string]string
 func WsHandler(c *gin.Context) {
 	se, err := lambda.Get(c.Param("namespace"))
 	if err != nil {
-		log.Fatal(err)
+		logrus.WithError(err).Warn("unable to load session")
+		c.AbortWithStatus(http.StatusNotFound)
+		return
 	}
 
 	namespaceLog := logrus.WithField("namespace", c.Param("namespace"))

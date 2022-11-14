@@ -1,21 +1,36 @@
 package server
 
 import (
-	"net/http"
-	"os"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/sirupsen/logrus"
 )
 
 func CheckAuth(c *gin.Context) {
-	basicUser, basicPw, hasBasic := c.Request.BasicAuth()
-	if !hasBasic {
-		c.AbortWithStatus(http.StatusForbidden)
+	jwtStr, err := c.Cookie("jwt")
+	if err != nil {
+		logrus.WithError(err).Warn("unable to read jwt")
+		return
+	}
+	if len(jwtStr) <= 0 {
 		return
 	}
 
-	if basicUser != os.Getenv("AUTH_USERNAME") || basicPw != os.Getenv("AUTH_PASSWORD") {
-		c.AbortWithStatus(http.StatusForbidden)
+	token, err := jwt.Parse(jwtStr, func(t *jwt.Token) (interface{}, error) {
+		if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
+			return nil, fmt.Errorf("invalid jwt signature method")
+		}
+
+		return signKey, nil
+	})
+	if err != nil {
+		logrus.WithError(err).Error("jwt parsing/validation error")
+		c.SetCookie("jwt", "", -1, "/", "", false, true)
 		return
 	}
+
+	claims := token.Claims.(claims)
+	c.Set("login", claims)
 }

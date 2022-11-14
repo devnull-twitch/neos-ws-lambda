@@ -22,10 +22,16 @@ spec:
             - containerPort: 8081
           env:
             -
-              name: AUTH_USERNAME
+              name: GH_CLIENT_REDIRECT
+              value: "https://lambda.devnullga.me/auth/github/back"
+            -
+              name: GH_CLIENT_ID
               value: "change_me"
             -
-              name: AUTH_PASSWORD
+              name: GH_CLIENT_SECRET
+              value: "change_me"
+            -
+              name: JWT_SECRET
               value: "change_me"
       imagePullSecrets:
         - name: dockerconfigjson-ghcr

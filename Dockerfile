@@ -21,5 +21,6 @@ ENV HTML_TEMPLATE_DIR templates
 COPY templates templates
 ENV LAMBDA_TEMPLATE_DIR session_templates
 RUN mkdir session_templates
+ENV GIN_MODE release
 
 ENTRYPOINT ["/lambda-server"]

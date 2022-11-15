@@ -54,6 +54,17 @@ func (se *StorageEntry) SetupPersist(varName string, varVal string) {
 	se.persistence[varName] = varVal
 }
 
+func (se *StorageEntry) GetLambdaNames() []string {
+	names := make([]string, len(se.lambdas))
+	index := 0
+	for name := range se.lambdas {
+		names[index] = name
+		index++
+	}
+
+	return names
+}
+
 func (se *StorageEntry) SetWriterChannel(wc chan<- MessageTpl) {
 	se.writeChan = wc
 }

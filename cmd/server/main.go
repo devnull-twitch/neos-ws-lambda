@@ -21,6 +21,7 @@ func main() {
 		// memory writing endpoints
 		api.POST("/session", server.PostSession)
 		api.POST("/session/:namespace/lambda/:func", server.PostLambda)
+		api.GET("/session/:namespace/lambda", server.GetLambdas)
 	}
 
 	r.GET("/connect/:namespace", server.WsHandler)
